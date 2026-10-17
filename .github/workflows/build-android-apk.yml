@@ -8,8 +8,6 @@ on:
       - "public/**"
       - "index.html"
       - "package.json"
-      - "package-lock.json"
-      - "vite.config.js"
       - "capacitor.config.json"
       - ".github/workflows/build-android-apk.yml"
   workflow_dispatch:
@@ -23,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      # Publishable frontend credentials; never place a service-role/secret key here.
+      # Public frontend credentials only; never put a Supabase service-role key here.
       VITE_SUPABASE_URL: https://xrdbdztcixsuxzeyvzmy.supabase.co
       VITE_SUPABASE_ANON_KEY: sb_publishable_jkQKfh09E_kPJ1SlZgu_8g_ZnFqCduG
     steps:
@@ -34,13 +32,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Install dependencies
         run: npm install
@@ -53,6 +53,9 @@ jobs:
 
       - name: Sync app into Android project
         run: npx cap sync android
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
 
       - name: Build debug APK
         working-directory: android
